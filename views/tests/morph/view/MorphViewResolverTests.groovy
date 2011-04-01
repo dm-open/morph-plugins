@@ -2,6 +2,7 @@ package morph.view
 
 import javax.servlet.ServletContext;
 
+import morph.annotations.TagLib;
 import morph.plugin.views.MorphViewResolver 
 import morph.plugins.PluginManager;
 
@@ -22,15 +23,41 @@ class MorphViewResolverTests extends spock.lang.Specification {
 
 	def "resolver should return valid view if view is on disk"() {
 		given:
-			PluginManager pluginManager = Mock()
-
-		and:
 			def tempView = File.createTempFile('morph_', '.html')
-			def resolver = new MorphViewResolver(pluginManager)
+			def resolver = new MorphViewResolver()
 			resolver.servletContext = [getRealPath: { path -> tempView.path} ] as ServletContext
 
 		expect:
 			resolver.loadView("view/that/doesnt/exist", null) != null
+	}
+	
+	def "registerTagLib should replace existing taglib if same prefix as existing taglib"() {
+		given:
+			def resolver = new MorphViewResolver()
+			
+		when: "we register a tag lib"
+			resolver.registerTagLib(new FredTagLib())
+		
+		and: "we register a tag lib with the same prefix"
+			resolver.registerTagLib(new AlsoFredTagLib())
+
+		then: "the new tag lib has replaced the existing one"
+			resolver.tagLibs.size() == 1
+			resolver.tagLibs[0].name() == "also-fred"
+	}
+}
+
+@TagLib(prefix="fred")
+class FredTagLib {
+	def name() {
+		"fred"	
+	}
+}
+
+@TagLib(prefix="fred")
+class AlsoFredTagLib {
+	def name() {
+		"also-fred"
 	}
 }
 

@@ -71,6 +71,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpResponse;
+import org.springframework.stereotype.Component;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.AntPathMatcher;
@@ -139,6 +140,7 @@ import org.springframework.web.util.WebUtils;
  * @see #setWebBindingInitializer
  * @see #setSessionAttributeStore
  */
+@Component
 public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 		implements HandlerAdapter, Ordered, BeanFactoryAware {
 
@@ -177,7 +179,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 
 	private HttpMessageConverter<?>[] messageConverters;
 
-	private int order = Ordered.LOWEST_PRECEDENCE;
+	private int order = Ordered.HIGHEST_PRECEDENCE;
 
 	private ConfigurableBeanFactory beanFactory;
 
@@ -187,7 +189,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 			new HashMap<Class<?>, ServletHandlerMethodResolver>();
 
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	public AnnotationMethodHandlerAdapter() {
 		// no restriction of HTTP methods by default
 		super(false);
@@ -447,7 +449,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 	/**
 	 * Build a HandlerMethodResolver for the given handler type.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("rawtypes")
 	private ServletHandlerMethodResolver getMethodResolver(Object handler) {
 		Class handlerClass = ClassUtils.getUserClass(handler);
 		synchronized (this.methodResolverCache) {
@@ -723,7 +725,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 					customArgumentResolvers, messageConverters);
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		@Override
 		protected void raiseMissingParameterException(String paramName, Class paramType) throws Exception {
 			throw new MissingServletRequestParameterException(paramName, paramType.getSimpleName());
@@ -773,7 +775,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 			return exprResolver.evaluate(placeholdersResolved, expressionContext);
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		@Override
 		protected Object resolveCookieValue(String cookieName, Class paramType, NativeWebRequest webRequest)
 				throws Exception {
@@ -792,7 +794,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 		}
 
 		@Override
-		@SuppressWarnings({"unchecked"})
+		@SuppressWarnings({"unchecked", "rawtypes"})
 		protected String resolvePathVariable(String pathVarName, Class paramType, NativeWebRequest webRequest)
 				throws Exception {
 
@@ -855,7 +857,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 			return super.resolveStandardArgument(parameterType, webRequest);
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({"rawtypes", "unchecked"})
 		public ModelAndView getModelAndView(Method handlerMethod, Class handlerType, Object returnValue,
 				ExtendedModelMap implicitModel, ServletWebRequest webRequest) throws Exception {
 
@@ -946,7 +948,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 			writeWithMessageConverters(returnValue, inputMessage, outputMessage);
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings("rawtypes")
 		private void handleHttpEntityResponse(HttpEntity<?> responseEntity, ServletWebRequest webRequest)
 				throws Exception {
 			if (responseEntity == null) {
@@ -971,7 +973,7 @@ public class AnnotationMethodHandlerAdapter extends WebContentGenerator
 			}
 		}
 
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({"rawtypes", "unchecked"})
 		private void writeWithMessageConverters(Object returnValue,
 				HttpInputMessage inputMessage, HttpOutputMessage outputMessage)
 				throws IOException, HttpMediaTypeNotAcceptableException {

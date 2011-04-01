@@ -2,9 +2,11 @@ package morph.plugin.views;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.RequestToViewNameTranslator;
 import org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator;
 
+@Component("viewNameTranslator")
 public class MorphRequestToViewNameTranslator implements RequestToViewNameTranslator {
 	public static final String CONTROLLER_NAME_ATTRIBUTE = "controllerClass";
 	public static final String CONTROLLER_METHOD_ATTRIBUTE = "controllerMethod";

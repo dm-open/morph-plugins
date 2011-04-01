@@ -10,15 +10,15 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import morph.plugin.views.taglib.TagLib;
+import morph.annotations.TagLib;
 
 import org.springframework.web.servlet.View;
 
 public class GroovyTemplateView implements View {
 	private Template template;
-	private List<TagLib> tagLibs;
+	private List<Object> tagLibs;
 
-	public GroovyTemplateView(Template template, List<TagLib> tagLibs) {
+	public GroovyTemplateView(Template template, List<Object> tagLibs) {
 		this.template = template;
 		this.tagLibs = tagLibs;
 	}
@@ -35,8 +35,11 @@ public class GroovyTemplateView implements View {
 			mergedModel.putAll(model);
 		}
 
-		for (TagLib tagLib : tagLibs) {
-			mergedModel.put(tagLib.getPrefix(), tagLib);
+		for (Object tagLib : tagLibs) {
+			if (tagLib.getClass().isAnnotationPresent(TagLib.class)) {
+				TagLib annotation = tagLib.getClass().getAnnotation(TagLib.class);
+				mergedModel.put(annotation.prefix(), tagLib);
+			}
 		}
 
 		Writable result = template.make(mergedModel);
