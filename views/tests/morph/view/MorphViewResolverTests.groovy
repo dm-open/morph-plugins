@@ -30,7 +30,21 @@ class MorphViewResolverTests extends spock.lang.Specification {
 		expect:
 			resolver.loadView("view/that/doesnt/exist", null) != null
 	}
-	
+
+		def "registerTagLib should register multiple taglibs with different prefies"() {
+		given:
+			def resolver = new MorphViewResolver()
+			
+		when: "we register a tag lib"
+			resolver.registerTagLib(new FredTagLib())
+		
+		and: "we register a tag lib with the a different prefix"
+			resolver.registerTagLib(new JoeTagLib())
+
+		then: "both taglibs are registered"
+			resolver.tagLibs.size() == 2
+	}
+
 	def "registerTagLib should replace existing taglib if same prefix as existing taglib"() {
 		given:
 			def resolver = new MorphViewResolver()
@@ -51,6 +65,13 @@ class MorphViewResolverTests extends spock.lang.Specification {
 class FredTagLib {
 	def name() {
 		"fred"	
+	}
+}
+
+@TagLib(prefix="joe")
+class JoeTagLib {
+	def name() {
+		"joe"
 	}
 }
 

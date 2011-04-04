@@ -36,8 +36,8 @@ public class MorphViewResolver extends AbstractCachingViewResolver implements In
 		TagLib annotation = tagLib.getClass().getAnnotation(TagLib.class);
 		
 		for (Object current : tagLibs) {
-			if (tagLib.getClass().isAnnotationPresent(TagLib.class)) {
-				TagLib currentAnnotation = tagLib.getClass().getAnnotation(TagLib.class);
+			if (current.getClass().isAnnotationPresent(TagLib.class)) {
+				TagLib currentAnnotation = current.getClass().getAnnotation(TagLib.class);
 				
 				if (currentAnnotation.prefix().equals(annotation.prefix())) {
 					existing = current;
