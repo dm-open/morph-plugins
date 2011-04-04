@@ -17,9 +17,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractCachingViewResolver;
+import org.springframework.web.servlet.view.RedirectView;
 
-@Component
+@Component("morphViewResolver")
 public class MorphViewResolver extends AbstractCachingViewResolver implements InitializingBean {
+	public static final String REDIRECT_URL_PREFIX = "redirect:";
+
 	private SimpleTemplateEngine templateEngine = new SimpleTemplateEngine();
 	private List<Object> tagLibs = new ArrayList<Object>();
 	
@@ -53,9 +56,19 @@ public class MorphViewResolver extends AbstractCachingViewResolver implements In
 	}
 	
 	@Override
-	public View loadView(String viewName, Locale locale) throws Exception {
+	protected View createView(String viewName, Locale locale) throws Exception {
 		logger.info("Searching for view " + viewName);
 		
+		if (viewName.startsWith(REDIRECT_URL_PREFIX)) {
+			String redirectUrl = viewName.substring(REDIRECT_URL_PREFIX.length());
+			return new RedirectView(redirectUrl, true, true);
+		}
+		
+		return super.createView(viewName, locale);
+	}
+	
+	@Override
+	public View loadView(String viewName, Locale locale) throws Exception {
 		File viewOnDisk = new File(getServletContext().getRealPath("/WEB-INF/views/" + viewName + ".html"));
 		
 		if (!viewOnDisk.exists()) {
