@@ -24,9 +24,11 @@ import org.springframework.web.servlet.View;
 
 public class MorphXMLView implements View {
 	private Resource input;
-	private List<ElementTransformer> elementTransformers = new ArrayList<ElementTransformer>() {{
-		add(new CopyElementTransformer());
-	}};
+	private List<ElementTransformer> elementTransformers = new ArrayList<ElementTransformer>() {
+		{
+			add(new CopyElementTransformer());
+		}
+	};
 
 	public MorphXMLView(Resource input) {
 		this.input = input;
@@ -35,7 +37,7 @@ public class MorphXMLView implements View {
 	public void setElementTransformers(List<ElementTransformer> elementTransformers) {
 		this.elementTransformers = elementTransformers;
 	}
-	
+
 	@Override
 	public String getContentType() {
 		return "text/html";
@@ -43,29 +45,29 @@ public class MorphXMLView implements View {
 
 	@Override
 	public void render(Map<String, ?> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-	  Document source = buildSourceDocument();
-	  Document workingCopy = (Document)source.copy();
-	  
-	  applyTransformationsTo(workingCopy.getRootElement(), model);
-	  
-	  writeToOutputStream(response, workingCopy);  
+		Document source = buildSourceDocument();
+		Document workingCopy = (Document) source.copy();
+
+		applyTransformationsTo(workingCopy.getRootElement(), model);
+
+		writeToOutputStream(response, workingCopy);
 	}
 
 	private Document buildSourceDocument() throws ParsingException, ValidityException, IOException {
 		Builder parser = new Builder();
-	  return parser.build(input.getInputStream());
+		return parser.build(input.getInputStream());
 	}
 
 	private void writeToOutputStream(HttpServletResponse response, Document workingCopy) throws UnsupportedEncodingException, IOException {
-		Serializer serializer = new Serializer(response.getOutputStream(), "UTF8");    
-	  serializer.setIndent(4);
-    serializer.write(workingCopy);
+		Serializer serializer = new Serializer(response.getOutputStream(), "UTF8");
+		serializer.setIndent(4);
+		serializer.write(workingCopy);
 	}
-	
+
 	private void applyTransformationsTo(Element element, Map<String, ?> model) {
 		ElementTransformer transformer = findFirstMatchingTransformerFor(element);
 		Element transformed = transformer.transform(element, model);
-		
+
 		if (haveChildren(transformed)) {
 			applyTransformationsToChildrenOf(transformed, model);
 		}
@@ -90,7 +92,7 @@ public class MorphXMLView implements View {
 			Node child = transformed.getChild(i);
 
 			if (isElement(child)) {
-				applyTransformationsTo((Element)child, model);
+				applyTransformationsTo((Element) child, model);
 			}
 		}
 	}
