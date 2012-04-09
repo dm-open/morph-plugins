@@ -1,4 +1,4 @@
-package morph.view
+package morph.plugin.views
 
 import javax.servlet.ServletContext;
 
