@@ -1,4 +1,4 @@
-package morph.plugin.views;
+package morph.plugin.views.xml;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -9,32 +9,32 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import morph.plugin.views.xml.CopyElementTransformer;
-import morph.plugin.views.xml.ElementTransformer;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Node;
+import nu.xom.Nodes;
 import nu.xom.ParsingException;
 import nu.xom.Serializer;
 import nu.xom.ValidityException;
+import nu.xom.xslt.XSLException;
+import nu.xom.xslt.XSLTransform;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.View;
 
 public class MorphXMLView implements View {
+	protected final Log logger = LogFactory.getLog(getClass());
+
 	private Resource input;
-	private List<ElementTransformer> elementTransformers = new ArrayList<ElementTransformer>() {
-		{
-			add(new CopyElementTransformer());
-		}
-	};
+	private Resource stylesheet;
+	private List<ElementTransformer> elementTransformers = new ArrayList<ElementTransformer>();
 
-	public MorphXMLView(Resource input) {
+	public MorphXMLView(Resource input, Resource stylesheet, List<ElementTransformer> elementTransformers) {
 		this.input = input;
-	}
-
-	public void setElementTransformers(List<ElementTransformer> elementTransformers) {
+		this.stylesheet = stylesheet;
 		this.elementTransformers = elementTransformers;
 	}
 
@@ -48,7 +48,9 @@ public class MorphXMLView implements View {
 		Document source = buildSourceDocument();
 		Document workingCopy = (Document) source.copy();
 
-		applyTransformationsTo(workingCopy.getRootElement(), model);
+		if (anyTransformersDefined()) {
+			applyTransformationsTo(workingCopy.getRootElement(), model);
+		}
 
 		writeToOutputStream(response, workingCopy);
 	}
@@ -58,10 +60,30 @@ public class MorphXMLView implements View {
 		return parser.build(input.getInputStream());
 	}
 
-	private void writeToOutputStream(HttpServletResponse response, Document workingCopy) throws UnsupportedEncodingException, IOException {
+	private boolean anyTransformersDefined() {
+		return elementTransformers.size() > 0;
+	}
+
+	private void writeToOutputStream(HttpServletResponse response, Document workingCopy) throws UnsupportedEncodingException, IOException, ValidityException, ParsingException, XSLException {
+		Document transformedDocument = workingCopy;
+
+		if (stylesheetDefined()) {
+			Builder parser = new Builder();
+	    Document xslt = parser.build(stylesheet.getInputStream());
+	    
+	    XSLTransform transform = new XSLTransform(xslt);
+	    Nodes result = transform.transform(workingCopy);
+	    
+	    transformedDocument = XSLTransform.toDocument(result);
+		}
+		
 		Serializer serializer = new Serializer(response.getOutputStream(), "UTF8");
 		serializer.setIndent(4);
-		serializer.write(workingCopy);
+		serializer.write(transformedDocument);
+	}
+
+	private boolean stylesheetDefined() {
+		return stylesheet != null;
 	}
 
 	private void applyTransformationsTo(Element element, Map<String, ?> model) {
@@ -76,6 +98,9 @@ public class MorphXMLView implements View {
 	private ElementTransformer findFirstMatchingTransformerFor(Element element) {
 		for (ElementTransformer availableTransformer : elementTransformers) {
 			if (availableTransformer.canTransform(element)) {
+				if (logger.isDebugEnabled()) {
+					logger.info("Transformer [" + availableTransformer.getClass().getName() + "] is transforming element [" + element.getLocalName() + "] with prefix [" + element.getNamespacePrefix() + "]");
+				}
 				return availableTransformer;
 			}
 		}

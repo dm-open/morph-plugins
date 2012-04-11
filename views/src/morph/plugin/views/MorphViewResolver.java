@@ -14,22 +14,32 @@ import morph.plugin.views.groovy.GroovyTemplateView;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractCachingViewResolver;
 import org.springframework.web.servlet.view.RedirectView;
 
 @Component("morphViewResolver")
-public class MorphViewResolver extends AbstractCachingViewResolver implements InitializingBean {
+public class MorphViewResolver extends AbstractCachingViewResolver implements InitializingBean, Ordered {
 	public static final String REDIRECT_URL_PREFIX = "redirect:";
 
 	private SimpleTemplateEngine templateEngine = new SimpleTemplateEngine();
 	private List<Object> tagLibs = new ArrayList<Object>();
+	private int order = 10;
 	
 	public MorphViewResolver() {
 		this.tagLibs = new ArrayList<Object>();
 	}
 	
+	@Override
+	public int getOrder() {
+		return order;
+	}
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
 	public void registerTagLib(Object tagLib) {
 		if (!tagLib.getClass().isAnnotationPresent(TagLib.class)) {
 			return;

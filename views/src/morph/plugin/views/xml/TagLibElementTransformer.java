@@ -4,18 +4,47 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
+
+import morph.annotations.TagLib;
 import nu.xom.Attribute;
 import nu.xom.Element;
 
-public class TagLibElementTransformer implements ElementTransformer {
+@Component
+public class TagLibElementTransformer implements ElementTransformer, InitializingBean, ApplicationContextAware {
+	protected final Log logger = LogFactory.getLog(getClass());
+
 	private Map<String, Object> tagLibs = new HashMap<String, Object>();
+	private ApplicationContext applicationContext;
+	private int order = Ordered.HIGHEST_PRECEDENCE;
+	
+	public TagLibElementTransformer() {
+		
+	}
 	
 	public TagLibElementTransformer(Map<String, Object> tagLibs) {
 		this.tagLibs = tagLibs;
 	}
+	
+	@Override
+	public int getOrder() {
+		return order;
+	}
+	public void setOrder(int order) {
+		this.order = order;
+	}
 
 	@Override
 	public boolean canTransform(Element source) {
+		logger.info("Looking for prefix [" + source.getNamespacePrefix() + "] from [" + Integer.toString(tagLibs.size()) + "] taglibs");
+
 		return tagLibs.containsKey(source.getNamespacePrefix());
 	}
 
@@ -28,12 +57,14 @@ public class TagLibElementTransformer implements ElementTransformer {
 		Object tagLib = lookupTagLibForElement(source);
 		
 		if (cannotFind(tagLib)) {
+			logger.warn("Cannot find taglib for [" + source.getLocalName() + "]");
 			return source;
 		}
 
 		Method method = findTagLibMethod(source, tagLib);
 		
 		if (cannotFind(method)) {
+			logger.warn("Cannot find taglib method for [" + source.getLocalName() + "]");
 			return source;
 		}
 		
@@ -94,6 +125,29 @@ public class TagLibElementTransformer implements ElementTransformer {
 		for (int i = 0; i < source.getAttributeCount(); i++) {
 			Attribute attribute = source.getAttribute(i);
 			attributes.put(attribute.getLocalName(), attribute.getValue());
+		}
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Searching for taglibs defined in Spring context");
+		}
+		
+		Map<String, Object> definedTagLibs = applicationContext.getBeansWithAnnotation(TagLib.class);
+		
+		for (Object tagLib : definedTagLibs.values()) {
+			String prefix = tagLib.getClass().getAnnotation(TagLib.class).prefix();
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug("Found taglib [" + tagLib.getClass().getName() + "] with prefix [" + prefix + "]");
+			}
+			tagLibs.put(prefix, tagLib);
 		}
 	}
 }
