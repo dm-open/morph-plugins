@@ -13,6 +13,8 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.mock.web.MockHttpServletResponse
 
+import spock.lang.Ignore;
+
 class MorphXMLViewTests extends spock.lang.Specification {
 	def setup() {
 		XMLUnit.ignoreWhitespace = true
@@ -57,6 +59,7 @@ class MorphXMLViewTests extends spock.lang.Specification {
 			XMLAssert.assertXMLEqual(response.getContentAsString(), '<?xml version="1.0" encoding="UTF8"?><html><body><div class="wrap"><h1>test</h1></div></body></html>')
 	}
 	
+	@Ignore('not implemented yet!')
 	def 'should use supplied stylesheet if configured'() {
 		given:
 			def input = new ByteArrayResource("<html><body><h1>test</h1></body></html>".getBytes())
