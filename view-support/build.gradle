@@ -1,4 +1,4 @@
-apply plugin: 'groovy'
+apply plugin: DMModule
 
 version = '0.1-SNAPSHOT'
 group = 'org.morphframework'
@@ -9,41 +9,9 @@ dependencies {
 	testCompile 'org.spockframework:spock-core:0.6-groovy-1.8'
 	testCompile 'junit:junit:4+'
 	testCompile 'org.springframework:spring-test:3.1+'
-	
+
 	compile 'org.springframework:spring-webmvc:3.1+'
 	compile 'javax.servlet:servlet-api:2.5+'
-}
-
-repositories {
-  add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
-    name = 'morph-release'
-    addIvyPattern "/mnt/ivy/morph-release/[organisation]/[module]/ivy-[revision].xml"
-    addArtifactPattern "/mnt/ivy/morph-release/[organisation]/[module]/[artifact]-[revision].[ext]"
-  }
-  mavenCentral()
-}
-
-uploadArchives {
-	repositories {
-   	add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
-      name = 'morph-release'
-      addIvyPattern "/mnt/ivy/morph-release/[organisation]/[module]/ivy-[revision].xml"
-      addArtifactPattern "/mnt/ivy/morph-release/[organisation]/[module]/[artifact]-[revision].[ext]"
-	  }
-	}
-}
-
-sourceSets {
-    main {
-        groovy {
-            srcDir 'src'
-        }
-    }
-    test {
-        groovy {
-            srcDir 'tests'
-        }
-    }
 }
 
 configurations {
@@ -71,6 +39,37 @@ task uploadSources(type:Upload) {
 
 uploadArchives.dependsOn uploadSources
 
-test {
-	outputs.upToDateWhen { false }
+class DMModule implements Plugin<Project> {
+	void apply(Project project) {
+		project.apply plugin: 'groovy'
+		project.repositories {
+			add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
+				name = 'morph-release'
+				addIvyPattern "/mnt/ivy/morph-release/[organisation]/[module]/ivy-[revision].xml"
+				addArtifactPattern "/mnt/ivy/morph-release/[organisation]/[module]/[artifact]-[revision].[ext]"
+			}
+			mavenCentral()
+		}
+
+		project.uploadArchives {
+			repositories {
+				add(new org.apache.ivy.plugins.resolver.FileSystemResolver()) {
+					name = 'morph-release'
+					addIvyPattern "/mnt/ivy/morph-release/[organisation]/[module]/ivy-[revision].xml"
+					addArtifactPattern "/mnt/ivy/morph-release/[organisation]/[module]/[artifact]-[revision].[ext]"
+				}
+			}
+		}
+
+		project.sourceSets {
+			main {
+				groovy { srcDir 'src' }
+			}
+			test {
+				groovy { srcDir 'tests' }
+			}
+		}
+
+		project.test { outputs.upToDateWhen { false } }
+	}
 }
