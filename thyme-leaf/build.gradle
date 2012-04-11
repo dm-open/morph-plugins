@@ -75,3 +75,7 @@ task uploadSources(type:Upload) {
 }
 
 uploadArchives.dependsOn uploadSources
+
+test {
+	outputs.upToDateWhen { false }
+}
