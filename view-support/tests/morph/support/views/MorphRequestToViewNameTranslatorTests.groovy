@@ -14,10 +14,12 @@ class MorphRequestToViewNameTranslatorTests extends spock.lang.Specification {
 			translator.getViewName(request(controllerName, methodName)) == view
 		
 		where:
-			controllerName			| methodName	| view
-			'Product'						| 'view'			| 'product/view'					
-			'ProductController'	| 'view'			| 'product/view'					
-			'LoginController'		| 'login'			| 'login/login'					
+			controllerName											| methodName	| view
+			'Product'														| 'view'			| 'product/view'					
+			'ProductController'									| 'view'			| 'product/view'					
+			'LoginController'										| 'login'			| 'login/login'					
+			'controllers.LoginController'				| 'login'			| 'login/login'					
+			'controllers.admin.LoginController'	| 'login'			| 'admin/login/login'					
 	}
 
 	private def request(String controller, String method) {

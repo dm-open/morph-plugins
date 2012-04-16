@@ -35,7 +35,7 @@ public class MorphRequestMappingHandlerAdapter extends AbstractHandlerMethodAdap
 		Class<?> controller = handlerMethod.getBean().getClass();
 		Method action = handlerMethod.getMethod(); 
 		
-		request.setAttribute("controllerClass", controller.getName().replace(controller.getPackage().getName() + ".", ""));
+		request.setAttribute("controllerClass", controller.getName());
 		request.setAttribute("controllerMethod", action.getName());
 
 		return adapter.handle(request, response, handlerMethod);
