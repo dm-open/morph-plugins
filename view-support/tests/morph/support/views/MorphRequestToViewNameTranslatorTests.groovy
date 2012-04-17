@@ -18,6 +18,7 @@ class MorphRequestToViewNameTranslatorTests extends spock.lang.Specification {
 			'Product'														| 'view'			| 'product/view'					
 			'ProductController'									| 'view'			| 'product/view'					
 			'LoginController'										| 'login'			| 'login/login'					
+			'controller.LoginController'				| 'login'			| 'login/login'					
 			'controllers.LoginController'				| 'login'			| 'login/login'					
 			'controllers.admin.LoginController'	| 'login'			| 'admin/login/login'					
 	}

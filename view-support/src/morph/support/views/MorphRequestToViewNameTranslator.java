@@ -30,7 +30,7 @@ public class MorphRequestToViewNameTranslator implements RequestToViewNameTransl
 			return new DefaultRequestToViewNameTranslator().getViewName(request);
 		}
 		
-		String controller = controllerClassName.replace("controllers.", "").replace(".", "/").replace("Controller", "").toLowerCase();
+		String controller = controllerClassName.replace("controllers.", "").replace("controller.", "").replace(".", "/").replace("Controller", "").toLowerCase();
 		String method = controllerMethodName.toLowerCase();
 		
 		return MessageFormat.format(viewNameFormat, controller, method);
